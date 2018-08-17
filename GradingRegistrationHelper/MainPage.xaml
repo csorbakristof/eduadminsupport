@@ -1,0 +1,26 @@
+﻿<Page
+    x:Class="GradingRegistrationHelper.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:GradingRegistrationHelper"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <RelativePanel>
+            <Button x:Name="OpenDirBtn" Content="Open dir..." Click="Button_Click"
+                    RelativePanel.AlignLeftWithPanel="True"
+                    RelativePanel.AlignRightWithPanel="True"/>
+            <CheckBox x:Name="GenOutput" Content="Generate output files" IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.GenerateOutputFiles}"
+                      RelativePanel.Below="OpenDirBtn"/>
+            <ListView x:Name="ExportedEntries" ItemsSource="{x:Bind Mode=TwoWay, Path=ViewModel.ExportEntries}"
+                      RelativePanel.Below="GenOutput"
+                      RelativePanel.AlignBottomWithPanel="True"
+                      RelativePanel.AlignLeftWithPanel="True"
+                      RelativePanel.AlignRightWithPanel="True"/>
+        </RelativePanel>
+
+    </Grid>
+</Page>

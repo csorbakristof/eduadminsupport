@@ -1,0 +1,30 @@
+﻿<Page
+    x:Class="PeerReviewDistributionHelper.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:PeerReviewDistributionHelper"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <RelativePanel>
+            <StackPanel x:Name="Buttons" RelativePanel.AlignTopWithPanel="True">
+                <Button Content="LoadSupervision" Click="LoadSupervisionButton_Click"/>
+                <Button Content="LoadReviews" Click="LoadReviewsButton_Click"/>
+                <Button Content="CollectReviewData" Click="CollectReviewDataButton_Click"/>
+                <Button Content="CreateStudentEmails" Click="CreateStudentEmailsButton_Click"/>
+                <Button Content="CreateAdvisorEmails" Click="CreateAdvisorEmailsButton_Click"/>
+            </StackPanel>
+            <TextBlock x:Name="textEvents" Text="Events:"
+                       RelativePanel.Below="Buttons"/>
+            <ListBox x:Name="EventsListBox"
+                    RelativePanel.Below="textEvents"
+                    RelativePanel.AlignLeftWithPanel="True"
+                    RelativePanel.AlignRightWithPanel="True"
+                    RelativePanel.AlignBottomWithPanel="True"/>
+        </RelativePanel>
+
+    </Grid>
+</Page>
