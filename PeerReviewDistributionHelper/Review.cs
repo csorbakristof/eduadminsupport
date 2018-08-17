@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Windows.ApplicationModel.Email;
 
-namespace PeerReviewCommonLib
+namespace PeerReviewDistributionHelper
 {
     internal class Review
     {

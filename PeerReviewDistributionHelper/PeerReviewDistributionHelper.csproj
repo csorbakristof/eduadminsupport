@@ -98,7 +98,9 @@
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Processor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Review.cs" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -135,10 +137,6 @@
     <ProjectReference Include="..\ExcelReaderStandardLibrary\ExcelReaderStandardLibrary.csproj">
       <Project>{155e0afa-2151-4563-8298-7105bb2dda19}</Project>
       <Name>ExcelReaderStandardLibrary</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\PeerReviewCommonLib\PeerReviewCommonLib.csproj">
-      <Project>{381e26d7-3d41-478f-878e-b973f961d938}</Project>
-      <Name>PeerReviewCommonLib</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">

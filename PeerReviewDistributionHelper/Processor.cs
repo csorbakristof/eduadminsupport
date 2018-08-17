@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Windows.ApplicationModel.Email;
 using Windows.Storage;
 
-namespace PeerReviewCommonLib
+namespace PeerReviewDistributionHelper
 {
     public class Processor
     {
