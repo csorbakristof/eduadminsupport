@@ -12,6 +12,7 @@
         <RelativePanel>
             <StackPanel x:Name="Buttons" RelativePanel.AlignTopWithPanel="True">
                 <Button Content="LoadSupervision" Click="LoadSupervisionButton_Click"/>
+                <Button Content="LoadSupervisorEmailAddresses" Click="LoadSupervisorEmailAddressesButton_Click"/>
                 <Button Content="LoadReviews" Click="LoadReviewsButton_Click"/>
                 <Button Content="CollectReviewData" Click="CollectReviewDataButton_Click"/>
                 <Button Content="CreateStudentEmails" Click="CreateStudentEmailsButton_Click"/>

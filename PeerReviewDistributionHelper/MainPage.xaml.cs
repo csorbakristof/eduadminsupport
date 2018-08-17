@@ -23,7 +23,13 @@ namespace PeerReviewDistributionHelper
         private async void LoadSupervisionButton_Click(object sender, RoutedEventArgs e)
         {
             processor.LoadSupervisions(await PickFileToOpen());
-            EventsListBox.Items.Add("Supervisions loaded. Next, load reviews XLS.");
+            EventsListBox.Items.Add("Supervisions loaded. Next, load supervisor email addresses from XLS.");
+        }
+
+        private async void LoadSupervisorEmailAddressesButton_Click(object sender, RoutedEventArgs e)
+        {
+            processor.LoadSupervisorEmailAddresses(await PickFileToOpen());
+            EventsListBox.Items.Add("Supervisor email addresses loaded. Next, load reviews XLS.");
         }
 
         private async void LoadReviewsButton_Click(object sender, RoutedEventArgs e)

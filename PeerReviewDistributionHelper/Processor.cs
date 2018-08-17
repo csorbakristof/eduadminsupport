@@ -14,6 +14,7 @@ namespace PeerReviewDistributionHelper
     {
         private List<Dictionary<string, string>> dictReviews;
         private List<Dictionary<string, string>> dictSupervisions;
+        private List<Dictionary<string, string>> dictSupervisorEmailAddresses;
         private List<Review> reviews;
 
         #region Public methods, to be called after each other.
@@ -27,6 +28,11 @@ namespace PeerReviewDistributionHelper
             dictSupervisions = LoadXlsIntoDictionaryList(supervisionsFile, 1, 1);
         }
 
+        public void LoadSupervisorEmailAddresses(StorageFile supervisorEmailAddressesFile)
+        {
+            dictSupervisorEmailAddresses = LoadXlsIntoDictionaryList(supervisorEmailAddressesFile, 0, 1);
+        }
+
         public void CollectReviewData()
         {
             reviews = dictReviews.Select(d => new Review(d)).ToList();
@@ -36,7 +42,16 @@ namespace PeerReviewDistributionHelper
                 var s = supervisions
                         .FirstOrDefault(x => x.StudentNeptunCode == r.ReviewerNeptunCode);
                 s?.ExtendReview(r);
+
+                addSupervisorEmailAddressToReview(r);
             }
+        }
+
+        private void addSupervisorEmailAddressToReview(Review r)
+        {
+            var advisorEntry = dictSupervisorEmailAddresses.Where(d => d["Name"] == r.AdvisorName).FirstOrDefault();
+            if (advisorEntry != null)
+                r.AdvisorEmail = advisorEntry["Email"];
         }
 
         public IEnumerable<EmailMessage> CreateStudentEmails()
@@ -69,7 +84,7 @@ namespace PeerReviewDistributionHelper
                 if (target.ReviewerNeptunCode != this.StudentNeptunCode)
                     throw new ArgumentException("Neptun code mismatch!");
                 target.AdvisorName = AdvisorName;
-                target.StudentName = StudentName;
+                target.ReviewerName = StudentName;
             }
 
             internal string StudentName { get; set; }
@@ -105,6 +120,7 @@ namespace PeerReviewDistributionHelper
             var e = new EmailMessage();
             var advisorEmail = reviews.First(r => r.AdvisorName == advisorName).AdvisorEmail;
             e.To.Add(new EmailRecipient(advisorEmail));
+            e.Subject = "Beszámolókra hallgatóid által adott értékelések";
             StringBuilder sb = new StringBuilder();
             sb.Append($"Kedves {advisorName}!\n\n" +
                 "Hallgatóid az alábbi értékeléseket adták le a beszámolókra:\n\n");
@@ -112,7 +128,7 @@ namespace PeerReviewDistributionHelper
             {
                 if (r.AdvisorEmail == advisorEmail)
                 {
-                    sb.Append($"--- Értékelő hallgató: {r.StudentName}({r.StudentNeptunCode}, {r.StudentEmail}) írta:\n\n");
+                    sb.Append($"--- Értékelő hallgató: {r.ReviewerName} ({r.ReviewerNeptunCode}) írta:\n\n");
                     sb.Append($"- összesített pontszám: {r.OverallScore}\n\n{r.Text}\n\n");
                 }
             }

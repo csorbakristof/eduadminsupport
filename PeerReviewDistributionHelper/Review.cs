@@ -16,15 +16,17 @@ namespace PeerReviewDistributionHelper
             Text = dictReviewItem["Text"];
         }
 
+        // Data available from the review results XLS
         public string Text { get; set; }
         public int OverallScore { get; set; }
         public string ReviewerNeptunCode { get; set; }
         public string PresenterEmail { get; set; }
 
-        public string StudentName { get; set; }
-        public string StudentNeptunCode { get; set; }
-        public string StudentEmail { get; set; }
+        // Data available from the supervision ("Terheles") XLS
+        public string ReviewerName { get; set; }
         public string AdvisorName { get; set; }
+
+        // Data available from the supervisor email XLS
         public string AdvisorEmail { get; set; }
     }
 }
