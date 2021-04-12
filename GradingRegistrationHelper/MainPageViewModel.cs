@@ -47,7 +47,7 @@ namespace GradingRegistrationHelper
 
         public MainPageViewModel()
         {
-            exportEntries.Add(new XlsExporter.Entry() { Name="Minta Mókus", NeptunCode="ABC123", Grade="5", Comment="Temp entry" });
+            exportEntries.Add(new XlsExporter.Entry() { Name="Minta Mókus", NeptunCode="ABC123", Grade="5", Comment="Temp entry; CHECK DIAG OUTPUT FOR ERRORS!" });
         }
 
         internal async void LoadFromFolder(StorageFolder dir)
@@ -78,7 +78,7 @@ namespace GradingRegistrationHelper
         {
             var filename = "grading_status.xlsx";
             var lines = ExportEntries
-                .Select(e => new string[] { e.Name, e.NeptunCode, e.Grade, e.Comment });
+                .Select(e => new string[] { e.Name, e.NeptunCode, e.Grade, e.Comment, $"InNeptun:{e.AttendancesEnumerated}" });
             XlsWriter writer = new XlsWriter();
             using (var outputstream = dir.OpenStreamForWriteAsync(filename, CreationCollisionOption.ReplaceExisting).Result)
             {
@@ -92,7 +92,7 @@ namespace GradingRegistrationHelper
             {
                 var filename = subject + ".xlsx";
                 var lines = exportDictionary[subject].Where(e=>e.Grade != null)
-                    .Select(e => new string[] { e.Name, e.NeptunCode, e.Grade });
+                    .Select(e => new string[] { e.NeptunCode, e.Grade, "0" });
                 XlsWriter writer = new XlsWriter();
                 using (var outputstream = dir.OpenStreamForWriteAsync(filename, CreationCollisionOption.ReplaceExisting).Result)
                 {

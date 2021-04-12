@@ -68,7 +68,10 @@ namespace GradingRegistrationHelper
         public void Merge(Student other)
         {
             if (Name != other.Name)
-                throw new ArgumentException($"Cannot merge student entry, names mismatch: {Name} != {other.Name}");
+            {
+                System.Diagnostics.Debug.WriteLine($"Cannot merge student entry, names mismatch: {Name} != {other.Name}");
+//                throw new ArgumentException($"Cannot merge student entry, names mismatch: {Name} != {other.Name}");
+            }
             if (NeptunCode != other.NeptunCode)
                 throw new ArgumentException($"Cannot merge student entry, neptun code mismatch: {NeptunCode} != {other.NeptunCode}");
             if (GradedSubject != null && other.GradedSubject != null && GradedSubject != other.GradedSubject)

@@ -27,6 +27,12 @@ namespace GradingRegistrationHelper
         {
             foreach (var s in newStudents)
             {
+                if (students.Count(e => e.NeptunCode == s.NeptunCode)>1)
+                {
+                    System.Diagnostics.Debug.WriteLine($"WARNING: More than one grade for student {s.NeptunCode}!");
+                    continue;
+                }
+
                 Student toUpdate = students.Where(e => e.NeptunCode == s.NeptunCode).SingleOrDefault();
                 if (toUpdate == null)
                     students.Add(s);
@@ -57,7 +63,7 @@ namespace GradingRegistrationHelper
 
         public static string SubjectCodeFromFilename(string filename)
         {
-            Regex r = new Regex(@"jegyimport_([A-Z0-9]+_[A-Za-z]+)_.+", RegexOptions.IgnoreCase);
+            Regex r = new Regex(@"jegyimport_([A-Z0-9]+_[A-Za-z0-9]+)_.+", RegexOptions.IgnoreCase);
             Match m = r.Match(filename);
             if (!m.Success)
                 throw new ArgumentException($"Cannot find subject code in filename {filename}");

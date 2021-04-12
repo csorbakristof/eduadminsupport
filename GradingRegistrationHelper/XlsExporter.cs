@@ -38,12 +38,15 @@ namespace GradingRegistrationHelper
                 var grade = s.GetGrade(attendance);
                 Grade = (grade != null) ? grade.Value.ToString() : null;
                 Comment = s.GetGradingSituation(attendance);
+                AttendancesEnumerated = string.Join(",", s.Attendances);
             }
 
             public string Name { get; set; }
             public string NeptunCode { get; set; }
             public string Grade { get; set; }
             public string Comment { get; set; }
+
+            public string AttendancesEnumerated { get; private set; }
 
             public override string ToString()
             {
