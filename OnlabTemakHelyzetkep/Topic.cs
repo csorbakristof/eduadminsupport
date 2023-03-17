@@ -14,5 +14,6 @@ namespace OnlabTemakHelyzetkep
         public List<string> Advisors;
         public List<string> Courses;
         public bool IsExternal;
+        public List<string> StudentNKods;
     }
 }
