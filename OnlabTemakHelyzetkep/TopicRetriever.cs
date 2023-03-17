@@ -58,6 +58,9 @@ namespace OnlabTemakHelyzetkep
                 topic.Advisors.Add(advisorMatch.Groups[1].Value);
             }
 
+            Regex findExternalPartner = new Regex("<span id=\"lblOuterPartner\">(.+)</span>");
+            topic.IsExternal = findExternalPartner.IsMatch(pageSource);
+
             return topic;
         }
     }
