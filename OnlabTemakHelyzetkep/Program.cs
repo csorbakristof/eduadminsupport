@@ -9,7 +9,7 @@ namespace OnlabTemakHelyzetkep
 {
     public class Program
     {
-        public class Course
+        public class CourseCategory
         {
             public string Title;
             public string Url;
@@ -20,7 +20,7 @@ namespace OnlabTemakHelyzetkep
 
         public class DepartmentPortalInfoContext
         {
-            public List<Course> Courses;
+            public List<CourseCategory> CourseCategories;
             public List<Topic> Topics;
         }
 
@@ -45,21 +45,21 @@ namespace OnlabTemakHelyzetkep
             {
                 Console.WriteLine("No previous download data, downloading from department portal...");
                 p.Context = new DepartmentPortalInfoContext() { Topics = new List<Topic>() };
-                p.Context.Courses = new List<Course>()
+                p.Context.CourseCategories = new List<CourseCategory>()
                     {
-                        new Course() { Title = "Onlab BSc Info", Url = "https://www.aut.bme.hu/Education/BScInfo/Onlab"},
-                        new Course() { Title="Témalabor BProf", Url = "https://www.aut.bme.hu/Education/BProf/Temalabor" },
-                        new Course() { Title="Önlab BSc Villany", Url = "https://www.aut.bme.hu/Education/BScVillany/Onlab" },
-                        new Course() { Title="Szakdolgozat BSc Villany", Url = "https://www.aut.bme.hu/Education/BScVillany/Szakdolgozat" },
-                        new Course() { Title="Témalabor BSc Info", Url = "https://www.aut.bme.hu/Education/BScInfo/Temalabor" },
-                        new Course() { Title="Önlab BSc Info", Url = "https://www.aut.bme.hu/Education/BScInfo/Onlab" },
-                        new Course() { Title="Szakdolgozat BSc Info", Url = "https://www.aut.bme.hu/Education/BScInfo/Szakdolgozat" },
-                        new Course() { Title="Önlab MSc Villany", Url = "https://www.aut.bme.hu/Education/MScVillany/Onlab" },
-                        new Course() { Title="Dipterv MSc Villany", Url = "https://www.aut.bme.hu/Education/MScVillany/Diploma" },
-                        new Course() { Title="Önlab MSc Info", Url = "https://www.aut.bme.hu/Education/MScInfo/Onlab" },
-                        new Course() { Title="Dipterv MSc Info", Url = "https://www.aut.bme.hu/Education/MScInfo/Diploma" },
-                        new Course() { Title="Önlab MSc Mecha", Url = "https://www.aut.bme.hu/Education/MScMechatronika/Onlab" },
-                        new Course() { Title="Dipterv MSc Mecha", Url = "https://www.aut.bme.hu/Education/MScMechatronika/Diploma" }
+                        new CourseCategory() { Title = "Onlab BSc Info", Url = "https://www.aut.bme.hu/Education/BScInfo/Onlab"},
+                        new CourseCategory() { Title="Témalabor BProf", Url = "https://www.aut.bme.hu/Education/BProf/Temalabor" },
+                        new CourseCategory() { Title="Önlab BSc Villany", Url = "https://www.aut.bme.hu/Education/BScVillany/Onlab" },
+                        new CourseCategory() { Title="Szakdolgozat BSc Villany", Url = "https://www.aut.bme.hu/Education/BScVillany/Szakdolgozat" },
+                        new CourseCategory() { Title="Témalabor BSc Info", Url = "https://www.aut.bme.hu/Education/BScInfo/Temalabor" },
+                        new CourseCategory() { Title="Önlab BSc Info", Url = "https://www.aut.bme.hu/Education/BScInfo/Onlab" },
+                        new CourseCategory() { Title="Szakdolgozat BSc Info", Url = "https://www.aut.bme.hu/Education/BScInfo/Szakdolgozat" },
+                        new CourseCategory() { Title="Önlab MSc Villany", Url = "https://www.aut.bme.hu/Education/MScVillany/Onlab" },
+                        new CourseCategory() { Title="Dipterv MSc Villany", Url = "https://www.aut.bme.hu/Education/MScVillany/Diploma" },
+                        new CourseCategory() { Title="Önlab MSc Info", Url = "https://www.aut.bme.hu/Education/MScInfo/Onlab" },
+                        new CourseCategory() { Title="Dipterv MSc Info", Url = "https://www.aut.bme.hu/Education/MScInfo/Diploma" },
+                        new CourseCategory() { Title="Önlab MSc Mecha", Url = "https://www.aut.bme.hu/Education/MScMechatronika/Onlab" },
+                        new CourseCategory() { Title="Dipterv MSc Mecha", Url = "https://www.aut.bme.hu/Education/MScMechatronika/Diploma" }
                     };
 
                 // Load topic data from the web
@@ -95,9 +95,9 @@ namespace OnlabTemakHelyzetkep
         private void AddCourseEnrolledStudentCounts(List<Dictionary<string, string>> courseEnrolledStudentCounts)
         {
             Regex getEnrolledStudentCount = new Regex(@"(\d+)/\d+/\d+");
-            for (int i=0; i<Context.Courses.Count; i++)
+            for (int i=0; i<Context.CourseCategories.Count; i++)
             {
-                var currentCourse = Context.Courses[i];
+                var currentCourse = Context.CourseCategories[i];
                 foreach(string courseCode in currentCourse.CourseCodes)
                 {
                     // Look for all entries in Neptun for this course code. There may be hungarian and english courses as well under the same code.
@@ -126,7 +126,7 @@ namespace OnlabTemakHelyzetkep
             // For each topic we search how many students are on it currently
             foreach(var topic in Context.Topics)
             {
-                Console.WriteLine($"Searching for students on topic: {topic.Title}");
+                //Console.WriteLine($"Searching for students on topic: {topic.Title}");
                 foreach(var supervision in advisorTable)
                 {
                     if (supervision["Téma címe"] == topic.Title)
@@ -138,11 +138,11 @@ namespace OnlabTemakHelyzetkep
         async Task RetrieveData()
         {
             var retriever = new TopicRetriever();
-            for(int i=0; i< Context.Courses.Count; i++)
+            for(int i=0; i< Context.CourseCategories.Count; i++)
             {
-                var course = Context.Courses[i];
-                var topicUrls = await retriever.GetTopicUrlList(course.Url);
-                course.CourseCodes = await retriever.GetCourseCodes(course.Url);
+                var courseCategory = Context.CourseCategories[i];
+                var topicUrls = await retriever.GetTopicUrlList(courseCategory.Url);
+                courseCategory.CourseCodes = await retriever.GetCourseCodesForCourseCategory(courseCategory.Url);
 
                 foreach (var topicUrl in topicUrls)
                 {
@@ -153,15 +153,17 @@ namespace OnlabTemakHelyzetkep
                     {
                         topic = await retriever.GetTopic(fullUrl);
                         topic.Url = fullUrl;
-                        topic.Courses = new List<string>() { course.Title };
+                        topic.CourseCategories = new List<string>() { courseCategory.Title };
                         topic.StudentNKods = new List<string>();
-                        Console.WriteLine($"New topic: {topic.Title} (limit {topic.MaxStudentCount})");
+                        //Console.WriteLine($"New topic: {topic.Title} (limit {topic.MaxStudentCount})");
+                        Console.Write('N');
                         Context.Topics.Add(topic);
                     }
                     else
                     {
-                        topic.Courses.Add(course.Title);
-                        Console.WriteLine($"Extended topic: {topic.Title} (limit {topic.MaxStudentCount})");
+                        topic.CourseCategories.Add(courseCategory.Title);
+                        //Console.WriteLine($"Extended topic: {topic.Title} (limit {topic.MaxStudentCount})");
+                        Console.Write('E');
                     }
 
                 }
@@ -170,11 +172,46 @@ namespace OnlabTemakHelyzetkep
 
         private void ShowStats()
         {
-            Console.WriteLine("==========  ==========");
+            Console.WriteLine("========== Statistics ==========");
             Console.WriteLine($"Topic count: {Context.Topics.Count()}");
             Console.WriteLine($"External topic count: {Context.Topics.Count(t=>t.IsExternal)}");
+
+            Console.WriteLine("====== Course based statistics: (total, occupied, and available seat counts for hungarian and english students)");
+            foreach(var cc in Context.CourseCategories)
+            {
+                Console.WriteLine($"--- Course Category: {cc.Title}");
+                Console.WriteLine($"Number of enrolled students: hungarian {cc.enrolledHungarianStudentCount}, english {cc.enrolledEnglishStudentCount}");
+                var hunTopics = Context.Topics.Where(t => t.CourseCategories.Contains(cc.Title)).Where(t => !t.Title.StartsWith("Z-Eng")).ToArray();
+                var engTopics = Context.Topics.Where(t => t.CourseCategories.Contains(cc.Title)).Where(t => t.Title.StartsWith("Z-Eng")).ToArray();
+                var hunSeatCount = hunTopics.Sum(t => t.MaxStudentCount);
+                var engSeatCount = engTopics.Sum(t => t.MaxStudentCount);
+                //Console.WriteLine($"Total seat count HUN {hunSeatCount}, ENG {engSeatCount}");
+                var hunOccupiedSeatCount = hunTopics.Sum(t => t.StudentNKods.Count);
+                var engOccupiedSeatCount = engTopics.Sum(t => t.StudentNKods.Count);
+                //Console.WriteLine($"Occupied seat count HUN {hunOccupiedSeatCount}, ENG {engOccupiedSeatCount}");
+                Console.WriteLine($"Used seat ratios HUN {100 * hunOccupiedSeatCount / hunSeatCount}% ENG { ((engSeatCount>0) ? (100*engOccupiedSeatCount/engSeatCount):(0)) }% ");
+            }
+
+            // Konzulensenként: mennyi szabad hely van és ez melyik kurzus kategóriákra vonatkozik (és angol vagy magyar)?
+            //  Közös témán lévő szabad hely minden konzulenshez számítson ebben az esetben, de egyébként a szabad helyek számába csak egyszer!
+
+            // Angol hallgatók (Neptun kurzus szerint) magyar kiírású témán? (Kell a Neptun kurzusok exportja egyesével)
+
+            // Félév elejére:
+            // Hány hallgatónak nincsen még témája? Ezek mely kurzusokon vannak?
+            //  Ehhez kell a Neptun névsor minden tantárgyhoz
+
+            // Csak érdekességként:
+            // Külső témákon lévők aránya kurzus kategóriánként
+            // Kiírt helyek száma belső és külső témákon?
+
+            // Félév végére:
+            // Utána igazából már a jegyeket is összeszedheti ez a rendszer, többszörös jelentkezésekre jobban felkészülve, mint a másik.
+
+            Console.WriteLine("====== Further stats");
+            Console.WriteLine($"Number or enrolled students: {Context.Topics.Count(t => t.IsExternal)}");
             Console.WriteLine($"Topics with multiple advisors: {Context.Topics.Count(t => t.Advisors.Count > 1)}");
-            Console.WriteLine($"Topics with multiple courses: {Context.Topics.Count(t => t.Courses.Count > 1)}");
+            Console.WriteLine($"Topics with multiple courses: {Context.Topics.Count(t => t.CourseCategories.Count > 1)}");
 
             Console.WriteLine($"Total capacity for students: {Context.Topics.Sum(t => t.MaxStudentCount)}");
             Console.WriteLine($"Total free capacity for students: {Context.Topics.Sum(t => t.MaxStudentCount - t.StudentNKods.Count)}");

@@ -41,7 +41,6 @@ namespace OnlabTemakHelyzetkep
             response.EnsureSuccessStatusCode();
 
             var pageSource = await response.Content.ReadAsStringAsync();
-            //Console.WriteLine($"{pageSource}\n");
 
             var topic = new Topic();
             Regex findTitle = new Regex(@"<h1>(.+)</h1>");
@@ -64,7 +63,7 @@ namespace OnlabTemakHelyzetkep
             return topic;
         }
 
-        internal async Task<string[]> GetCourseCodes(string url)
+        internal async Task<string[]> GetCourseCodesForCourseCategory(string url)
         {
             var httpClient = new HttpClient();
             var courseCodes = new List<string>();

@@ -12,7 +12,7 @@ namespace OnlabTemakHelyzetkep
         public int MaxStudentCount;
         public string Url;
         public List<string> Advisors;
-        public List<string> Courses;
+        public List<string> CourseCategories;
         public bool IsExternal;
         public List<string> StudentNKods;
     }
