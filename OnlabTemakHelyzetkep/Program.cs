@@ -192,6 +192,28 @@ namespace OnlabTemakHelyzetkep
                 Console.WriteLine($"Used seat ratios HUN {100 * hunOccupiedSeatCount / hunSeatCount}% ENG { ((engSeatCount>0) ? (100*engOccupiedSeatCount/engSeatCount):(0)) }% ");
             }
 
+            // Melyik konzulensnél van még szabad hely (magyar-angol helyeket nem megkülönböztetve)
+            var availableSeats = new Dictionary<string, int>();
+            foreach(var t in Context.Topics)
+            {
+                if (t.IsExternal)
+                    continue;   // KÜLSŐ TÉMÁK esetén ezt spécin kell kezelni!!
+                var freeSeats = t.MaxStudentCount - t.StudentNKods.Count;
+                foreach(var a in t.Advisors)
+                {
+                    if (availableSeats.ContainsKey(a))
+                        availableSeats[a]+=freeSeats;
+                    else
+                        availableSeats.Add(a,freeSeats);
+                }
+            }
+            foreach(var advisor in availableSeats.Keys)
+            {
+                Console.WriteLine($"Advisor {advisor} free seats: {availableSeats[advisor]}");
+            }
+            
+
+
             // Konzulensenként: mennyi szabad hely van és ez melyik kurzus kategóriákra vonatkozik (és angol vagy magyar)?
             //  Közös témán lévő szabad hely minden konzulenshez számítson ebben az esetben, de egyébként a szabad helyek számába csak egyszer!
 
