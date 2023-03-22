@@ -63,5 +63,29 @@ namespace OnlabTemakHelyzetkep
 
             return topic;
         }
+
+        internal async Task<string[]> GetCourseCodes(string url)
+        {
+            var httpClient = new HttpClient();
+            var courseCodes = new List<string>();
+
+            using HttpResponseMessage response = await httpClient.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+
+            var pageSource = await response.Content.ReadAsStringAsync();
+
+            Regex findTopicUrls = new Regex("href=\"../../Course/([^\"]+)\"");
+
+            var matches = findTopicUrls.Matches(pageSource);
+
+            foreach (Match match in matches)
+            {
+                var courseCode = match.Groups[1].Value;
+                courseCodes.Add(courseCode);
+            }
+
+            return courseCodes.ToArray();
+
+        }
     }
 }
