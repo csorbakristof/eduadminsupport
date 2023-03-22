@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "OnlabTemakHelyzetkep": {
+      "commandName": "Project",
+      "commandLineArgs": "c:\\temp\\Terheles_22-23-tavasz.xlsx c:\\temp\\kurzusok_neptunExport.xlsx c:\\temp\\data.xml"
+    }
+  }
+}

@@ -28,25 +28,53 @@ namespace OnlabTemakHelyzetkep
 
         static async Task Main(string[] args)
         {
+            // Command line arguments: terhelesXls coursesXls [retrievedPortalDataXml]
+            // c:\temp\Terheles_22-23-tavasz.xlsx c:\temp\kurzusok_neptunExport.xlsx c:\temp\data.xml
+            var terhelesXlsFilename = args[0];
+            var coursesXlsFilename = args[1];
+            var retrievedPortalData = string.Empty;
+            if (args.Length>=3)
+                retrievedPortalData = args[2];
+            Console.WriteLine($"Using terheles xls: {terhelesXlsFilename}");
+            Console.WriteLine($"Using kurzusok xls: {coursesXlsFilename}");
+            Console.WriteLine($"Using retrievedData xml: {retrievedPortalData}");
+
             Program p = new Program();
 
-            p.Context = new DepartmentPortalInfoContext() { Topics = new List<Topic>() };
-            p.Context.Courses = new List<Course>()
+            if (retrievedPortalData == string.Empty || !System.IO.File.Exists(retrievedPortalData))
             {
-                new Course() { Title = "Onlab BSc Info", Url = "https://www.aut.bme.hu/Education/BScInfo/Onlab"},
-                new Course() { Title="Témalabor BProf", Url = "https://www.aut.bme.hu/Education/BProf/Temalabor" },
-                new Course() { Title="Önlab BSc Villany", Url = "https://www.aut.bme.hu/Education/BScVillany/Onlab" },
-                new Course() { Title="Szakdolgozat BSc Villany", Url = "https://www.aut.bme.hu/Education/BScVillany/Szakdolgozat" },
-                new Course() { Title="Témalabor BSc Info", Url = "https://www.aut.bme.hu/Education/BScInfo/Temalabor" },
-                new Course() { Title="Önlab BSc Info", Url = "https://www.aut.bme.hu/Education/BScInfo/Onlab" },
-                new Course() { Title="Szakdolgozat BSc Info", Url = "https://www.aut.bme.hu/Education/BScInfo/Szakdolgozat" },
-                new Course() { Title="Önlab MSc Villany", Url = "https://www.aut.bme.hu/Education/MScVillany/Onlab" },
-                new Course() { Title="Dipterv MSc Villany", Url = "https://www.aut.bme.hu/Education/MScVillany/Diploma" },
-                new Course() { Title="Önlab MSc Info", Url = "https://www.aut.bme.hu/Education/MScInfo/Onlab" },
-                new Course() { Title="Dipterv MSc Info", Url = "https://www.aut.bme.hu/Education/MScInfo/Diploma" },
-                new Course() { Title="Önlab MSc Mecha", Url = "https://www.aut.bme.hu/Education/MScMechatronika/Onlab" },
-                new Course() { Title="Dipterv MSc Mecha", Url = "https://www.aut.bme.hu/Education/MScMechatronika/Diploma" }
-            };
+                Console.WriteLine("No previous download data, downloading from department portal...");
+                p.Context = new DepartmentPortalInfoContext() { Topics = new List<Topic>() };
+                p.Context.Courses = new List<Course>()
+                    {
+                        new Course() { Title = "Onlab BSc Info", Url = "https://www.aut.bme.hu/Education/BScInfo/Onlab"},
+                        new Course() { Title="Témalabor BProf", Url = "https://www.aut.bme.hu/Education/BProf/Temalabor" },
+                        new Course() { Title="Önlab BSc Villany", Url = "https://www.aut.bme.hu/Education/BScVillany/Onlab" },
+                        new Course() { Title="Szakdolgozat BSc Villany", Url = "https://www.aut.bme.hu/Education/BScVillany/Szakdolgozat" },
+                        new Course() { Title="Témalabor BSc Info", Url = "https://www.aut.bme.hu/Education/BScInfo/Temalabor" },
+                        new Course() { Title="Önlab BSc Info", Url = "https://www.aut.bme.hu/Education/BScInfo/Onlab" },
+                        new Course() { Title="Szakdolgozat BSc Info", Url = "https://www.aut.bme.hu/Education/BScInfo/Szakdolgozat" },
+                        new Course() { Title="Önlab MSc Villany", Url = "https://www.aut.bme.hu/Education/MScVillany/Onlab" },
+                        new Course() { Title="Dipterv MSc Villany", Url = "https://www.aut.bme.hu/Education/MScVillany/Diploma" },
+                        new Course() { Title="Önlab MSc Info", Url = "https://www.aut.bme.hu/Education/MScInfo/Onlab" },
+                        new Course() { Title="Dipterv MSc Info", Url = "https://www.aut.bme.hu/Education/MScInfo/Diploma" },
+                        new Course() { Title="Önlab MSc Mecha", Url = "https://www.aut.bme.hu/Education/MScMechatronika/Onlab" },
+                        new Course() { Title="Dipterv MSc Mecha", Url = "https://www.aut.bme.hu/Education/MScMechatronika/Diploma" }
+                    };
+
+                // Load topic data from the web
+                await p.RetrieveData();
+
+                XmlSerializer xml = new XmlSerializer(typeof(DepartmentPortalInfoContext));
+                xml.Serialize(new StreamWriter(@"c:\temp\data.xml"), p.Context);
+                Console.WriteLine("Downloaded data saved.");
+            }
+            else
+            {
+                XmlSerializer xml = new XmlSerializer(typeof(DepartmentPortalInfoContext));
+                p.Context = (DepartmentPortalInfoContext)xml.Deserialize(new StreamReader(@"c:\temp\data.xml"));
+                Console.WriteLine("Downloaded data loaded from local file.");
+            }
 
             // Load current advisor data from excel (exported from the departments portal)
             Excel2Dict e = new Excel2Dict();
@@ -55,9 +83,6 @@ namespace OnlabTemakHelyzetkep
             // Load current student counts on the courses (exported from Neptun)
             var courseEnrolledStudentCounts = e.Read(@"c:\temp\kurzusok_neptunExport.xlsx", 0, 1);
 
-            // Load topic data from the web
-            await p.RetrieveData();
-
             // Combine information
             p.AddCurrentAdvisorData(advisorTable);
             p.AddCourseEnrolledStudentCounts(courseEnrolledStudentCounts);
@@ -65,9 +90,6 @@ namespace OnlabTemakHelyzetkep
             // Show stats
             p.ShowStats();
 
-            XmlSerializer xml = new XmlSerializer(typeof(DepartmentPortalInfoContext));
-            xml.Serialize(new StreamWriter(@"c:\temp\data.xml"), p.Context);
-            Console.WriteLine("Downloaded data saved.");
         }
 
         private void AddCourseEnrolledStudentCounts(List<Dictionary<string, string>> courseEnrolledStudentCounts)
@@ -122,7 +144,7 @@ namespace OnlabTemakHelyzetkep
                 var topicUrls = await retriever.GetTopicUrlList(course.Url);
                 course.CourseCodes = await retriever.GetCourseCodes(course.Url);
 
-                foreach (var topicUrl in topicUrls.Take(5))    // ------------------------------ WARNING, limiting to 20 topic per course!
+                foreach (var topicUrl in topicUrls)
                 {
                     var fullUrl = "https://www.aut.bme.hu/Task/" + topicUrl;
 
@@ -148,6 +170,7 @@ namespace OnlabTemakHelyzetkep
 
         private void ShowStats()
         {
+            Console.WriteLine("==========  ==========");
             Console.WriteLine($"Topic count: {Context.Topics.Count()}");
             Console.WriteLine($"External topic count: {Context.Topics.Count(t=>t.IsExternal)}");
             Console.WriteLine($"Topics with multiple advisors: {Context.Topics.Count(t => t.Advisors.Count > 1)}");
