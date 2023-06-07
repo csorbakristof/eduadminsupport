@@ -1,12 +1,24 @@
-﻿using System.Text.RegularExpressions;
+﻿using OfficeOpenXml.ConditionalFormatting;
+using System.Runtime.Serialization;
+using System.Text.RegularExpressions;
 
 namespace Common.Model
 {
+    [DataContract]
     public class CourseCategory
     {
+        [DataMember]
         public string Title { get; set; }
+        [DataMember]
         public string Url { get; set; }
-        public IEnumerable<Course>? Courses { get; set; }
+        [DataMember]
+        public List<Course> Courses { get; set; } = new List<Course>();
+
+        public CourseCategory()
+        {
+            Title = string.Empty;
+            Url = string.Empty;
+        }
 
         public CourseCategory(string title, string url)
         {
@@ -33,8 +45,6 @@ namespace Common.Model
 
         internal async Task GetCourses(IEnumerable<Course> courseList)
         {
-            var courses = new List<Course>();
-
             var httpClient = new HttpClient();
 
             using HttpResponseMessage response = await httpClient.GetAsync(Url);
@@ -49,10 +59,13 @@ namespace Common.Model
             foreach (Match match in matches)
             {
                 var classCode = match.Groups[1].Value;
-                courses.AddRange(courseList.Where(c => c.ClassCode == classCode)); // May have multiple courses in that class
+                Courses.AddRange(courseList.Where(c => c.ClassCode == classCode)); // May have multiple courses in that class
             }
+        }
 
-            this.Courses = courses;
+        public override string ToString()
+        {
+            return Title;
         }
     }
 }

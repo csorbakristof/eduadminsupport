@@ -4,7 +4,7 @@ namespace Common.DataSources
 {
     public class CourseCategorySource : ICourseCategorySource
     {
-        IEnumerable<CourseCategory> ICourseCategorySource.GetCourseCategories()
+        List<CourseCategory> ICourseCategorySource.GetCourseCategories()
         {
             return new List<CourseCategory>()
                 {

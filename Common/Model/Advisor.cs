@@ -1,14 +1,21 @@
-﻿namespace Common.Model
+﻿using System.Runtime.Serialization;
+
+namespace Common.Model
 {
+    [DataContract]
     public class Advisor
     {
+        [DataMember]
         public string Name { get; set; }
-        public string? Email { get; set; }
 
-        public Advisor(string name, string? email = null)
+        public Advisor(string name)
         {
             Name = name;
-            Email = email;
+        }
+
+        public Advisor()
+        {
+            Name = string.Empty;
         }
     }
 }

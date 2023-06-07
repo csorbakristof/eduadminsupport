@@ -1,38 +1,75 @@
 ﻿using Common.DataSources;
+using Common.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.Serialization;
 
 namespace Common.Model
 {
+    [DataContract]
     public class Context
     {
-        public IEnumerable<CourseCategory> CourseCategories { get; set; }
-        public IList<Course> Courses { get; set; } = new List<Course>();
-        public IList<Advisor> Advisors { get; set; } = new List<Advisor>();
-        public IList<Topic> Topics { get; set; } = new List<Topic>();
-        public IList<Student> Students { get; set; } = new List<Student>();
-        public IList<Grading>? Gradings { get; set; }
-        public IList<PresentationSessionType>? PresentationSessionTypes { get; set; }
+        [DataMember]
+        public List<CourseCategory> CourseCategories { get; set; }
+        [DataMember]
+        public List<Course> Courses { get; set; }
+        [DataMember]
+        public List<Advisor> Advisors { get; set; } = new List<Advisor>();
+        [DataMember]
+        public List<Topic> Topics { get; set; } = new List<Topic>();
+        [DataMember]
+        public List<Student> Students { get; set; } = new List<Student>();
+        [DataMember]
+        public List<Grading>? Gradings { get; set; }
+        [DataMember]
+        public List<PresentationSessionType>? PresentationSessionTypes { get; set; }
 
         const string TopicUrlPrefix = @"https://www.aut.bme.hu/Task/";
-        const bool RetrieveOnlyFirst10Topics = true;
+        public const string GradeImportFilenameSemesterPostfix = "2022_23_2";
+        const bool RetrieveOnlyFirst5Topics = true;
 
         public static async Task<Context> RetrieveContextFromDataSources(ICourseCategorySource categorySource)
         {
             var context = new Context();
-            context.CourseCategories = categorySource.GetCourseCategories();
+            await GetCourseCategoriesAndCourses(categorySource, context);
+            await GetTopicsAndAdvisors(context);
+            await GetStudentsAndTopicRegistrations(context);
+            await GetGradings(context);
+            await GetEnrolledStudentsFromNeptun(context);
 
-            context.Courses = new List<Course>();   // TODO: retrieve all classes and courses here...
+            return context;
+        }
 
-            foreach (var cat in context.CourseCategories)
-            {
-                await cat.GetCourses(context.Courses);
-            }
+        #region Caching
+        public async Task SaveToCache(string cacheFilename)
+        {
+            DataContractSerializer serializer = new DataContractSerializer(typeof(Context));
+            XmlWriter writer = XmlWriter.Create(cacheFilename);
+            serializer.WriteObject(writer, this);
+            writer.Close();
+        }
 
+        public static async Task<Context?> LoadFromCacheIfAvailable(string cacheFilename)
+        {
+            if (!System.IO.File.Exists(cacheFilename))
+                return null;
+            DataContractSerializer serializer = new DataContractSerializer(typeof(Context));
+            XmlReader reader = XmlReader.Create(cacheFilename);
+            Context c = (Context)serializer.ReadObject(reader);
+            reader.Close();
+            return c;
+        }
+        #endregion
+
+        #region Data retrieval methods
+        private static async Task GetTopicsAndAdvisors(Context context)
+        {
             Console.Out.WriteLine("Retrieving topics and advisors...");
             context.Advisors = new List<Advisor>();
             context.Topics = new List<Topic>();
@@ -40,8 +77,8 @@ namespace Common.Model
             {
                 var urls = await cat.GetTopicUrls(TopicUrlPrefix);
 
-                if (RetrieveOnlyFirst10Topics)
-                    urls = urls.Take(10);
+                if (RetrieveOnlyFirst5Topics)
+                    urls = urls.Take(5);
 
                 foreach (var url in urls)
                 {
@@ -58,14 +95,119 @@ namespace Common.Model
                     topic.CourseCategories.Add(cat);
                 }
             }
-
-            return context;
-
         }
+
+        private static async Task GetStudentsAndTopicRegistrations(Context context)
+        {
+            Console.Out.WriteLine("Loading students (and matching advisors) based on portal 'Terheles'...");
+            var src = new AdvisorLoadSource();
+            foreach (var (advisor, topicTitle, studentName, studentNKod) in src.GetStudentNamesAndAdvisorList())
+            {
+                // Find advisor
+                Advisor? a = context.Advisors.SingleOrDefault(a => a.Name == advisor);
+                if (a == null)
+                {
+                    a = new Advisor(advisor);
+                    context.Advisors.Add(a);
+                    await Console.Out.WriteLineAsync($"WARNING: Advisor '{advisor}' was first found in AdvisorLoadSource, not in topic web pages!");
+                }
+
+                // Add student
+                Student? s = context.Students.SingleOrDefault(s => s.NKod == studentNKod);
+                if (s == null)
+                {
+                    s = new Student(studentName, studentNKod);
+                    context.Students.Add(s);
+                }
+
+                // Find topic
+                Topic? t = null;
+                var topicsWithMatchingTitles = context.Topics.Where(t => t.Title == topicTitle).ToList();
+                if (topicsWithMatchingTitles.Count == 1)
+                {
+                    t = topicsWithMatchingTitles[0];
+                }
+                else if (topicsWithMatchingTitles.Count == 0)
+                {
+                    Console.WriteLine("WARNING: Topic " + topicTitle + " not found (appeared in AdvisorLoadSource)");
+                }
+                else
+                {
+                    // Checking advisor name...
+                    var topicsWithMatchingTitleAndAdvisor =
+                        topicsWithMatchingTitles.Where(t => t.Advisors.Any(a => advisor.StartsWith(a.Name))).ToList();
+                    if (topicsWithMatchingTitleAndAdvisor.Count == 1)
+                        t = topicsWithMatchingTitleAndAdvisor[0];
+                    else
+                    {
+                        Console.WriteLine("WARNING: Topic " + topicTitle + " has multiple instances with advisor name " + advisor);
+                        t = topicsWithMatchingTitleAndAdvisor[0];   // They seem to be equivalent in all important aspects...
+                    }
+                }
+
+                if (s.TopicRegistrations == null)
+                    s.TopicRegistrations = new List<(Advisor, Topic)>();
+                s.TopicRegistrations.Add((a, t));
+            }
+        }
+
+        private static async Task GetCourseCategoriesAndCourses(ICourseCategorySource categorySource, Context context)
+        {
+            Console.Out.WriteLine("Retrieving course categories...");
+            context.CourseCategories = categorySource.GetCourseCategories();
+
+            Console.Out.WriteLine("Retrieving courses based on Neptun...");
+            var neptunCourseSource = new NeptunCourseSource();
+            context.Courses = neptunCourseSource.GetCourses().ToList();
+
+            Console.Out.WriteLine("Collecting courses for course categories...");
+            foreach (var category in context.CourseCategories)
+            {
+                await category.GetCourses(context.Courses);
+            }
+        }
+
+        private static async Task GetEnrolledStudentsFromNeptun(Context context)
+        {
+            // Load JEGYIMPORT xlsx files
+            foreach (Course c in context.Courses)
+            {
+                var xlsxFilename = @"c:\_onlabFelugyeletAdatok\" + c.GradeImportFilename(Context.GradeImportFilenameSemesterPostfix);
+                var xlsxReader = new Excel2Dict();
+                if (System.IO.File.Exists(xlsxFilename))
+                {
+                    var lines = xlsxReader.Read(xlsxFilename, 0, 1);
+                    c.EnrolledStudentNKodsFromNeptun = new List<string>();
+                    foreach (var line in lines)
+                    {
+                        var nkod = line["Neptun kód"];
+                        c.EnrolledStudentNKodsFromNeptun.Add(nkod);
+                    }
+                }
+                else
+                {
+                    await Console.Out.WriteLineAsync($"WARNING: No JEGYIMPORT file for course {c}");
+                }
+            }
+        }
+
+        private static async Task GetGradings(Context context)
+        {
+            var src = new GradingSource();
+            var grades = src.GetGrades().ToList();
+            context.Gradings = new List<Grading>();
+            foreach (var line in grades)
+            {
+                var g = new Grading() { StudentNKodFromGrading = line.StudentNKod, ClassCodeInGrading = line.ClassCode, Grade = line.Grade };
+                context.Gradings.Add(g);
+            }
+        }
+
+        #endregion
 
         public void PerformBaseChecks()
         {
-            if (RetrieveOnlyFirst10Topics)
+            if (RetrieveOnlyFirst5Topics)
                 Console.WriteLine("WARNING: RetrieveOnlyFirst10Topics active");
 
             // All topics have at least one advisor and course category
@@ -87,10 +229,8 @@ namespace Common.Model
                 Console.WriteLine("WARNING: No CourseCategories in context");
             if (Courses.Count() == 0)
                 Console.WriteLine("WARNING: No Courses in context");
-            if (Gradings.Count() == 0)
+            if (Gradings == null || Gradings?.Count() == 0)
                 Console.WriteLine("WARNING: No Gradings in context");
-
-
         }
     }
 }

@@ -1,24 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Common.Model
 {
+    [DataContract]
     public class Grading
     {
-        public Student Student { get; set; }
+        [DataMember]
+        public string StudentNKodFromGrading { get; set; }
+
+        [DataMember]
         public Topic Topic { get; set; }
-        public Course Course { get; set; }
 
+        [DataMember]
+        public string ClassCodeInGrading { get; set; }
+
+        [DataMember]
         public int? Grade { get; set; }
-
-        public Grading(Student student, Topic topic, Course course)
-        {
-            Student = student;
-            Topic = topic;
-            Course = course;
-        }
     }
 }

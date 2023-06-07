@@ -1,17 +1,27 @@
-﻿namespace Common.Model
+﻿using System.Runtime.Serialization;
+
+namespace Common.Model
 {
+    [DataContract]
     public class Course
     {
-        public string ClassCode { get; set; }   // Like VIAUAL00
-        public string CourseCode { get; set; }  // Like L
+        [DataMember]
+        public string ClassCode { get; set; } = string.Empty;   // Like VIAUAL00
+        [DataMember]
+        public string CourseCode { get; set; } = string.Empty;  // Like L
 
         public bool IsEnglish => CourseCode.StartsWith('A');
-        public int? EnrolledStudentCount { get; set; }
+        [DataMember]
+        public int? EnrolledStudentCountInNeptun { get; set; }
+        [DataMember]
+        public List<string> EnrolledStudentNKodsFromNeptun { get; set; } = new List<string>();
 
-        public Course(string classCode, string courseCode)
+        public override string ToString()
         {
-            ClassCode = classCode;
-            CourseCode = courseCode;
+            return $"{ClassCode}-{CourseCode}";
         }
+
+        // SemesterPostfix: like '2022_23_2'
+        public string GradeImportFilename(string semesterPostfix) => $"jegyimport_BME{ClassCode}_{CourseCode}_{semesterPostfix}.xlsx";
     }
 }

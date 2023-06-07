@@ -1,22 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Common.Model
 {
+    [DataContract]
     public class Topic
     {
+        [DataMember] 
         public string Title { get; set; }
+        [DataMember] 
         public int SeatCount { get; set; }
+        [DataMember] 
         public string Url { get; set; }
-        public IList<Advisor>? Advisors { get; set; }
-        public IList<CourseCategory>? CourseCategories { get; set; }
+        [DataMember] 
+        public List<Advisor>? Advisors { get; set; }
+        [DataMember] 
+        public List<CourseCategory>? CourseCategories { get; set; }
+        [DataMember] 
         public bool IsExternal { get; set; }
 
-        public IList<Student>? RegisteredStudents { get; set; }
+        [DataMember]
+        public List<Student>? RegisteredStudents { get; set; }
 
         public static async Task<Topic> RetrieveFromWeb(string url, IList<Advisor> advisorListToExtendAsNeeded)
         {
@@ -59,6 +68,11 @@ namespace Common.Model
             }
             topic.Advisors = advisorList;
             return topic;
+        }
+
+        public override string ToString()
+        {
+            return Title;
         }
     }
 }
