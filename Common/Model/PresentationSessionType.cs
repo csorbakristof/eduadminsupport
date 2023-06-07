@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Common.Model
 {
-    [DataContract]
+    [DataContract(IsReference = true)]
     public class PresentationSessionType
     {
         [DataMember]

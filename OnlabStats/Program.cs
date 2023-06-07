@@ -2,6 +2,7 @@
 using Common.DataSources;
 using Common.Helpers;
 using Common.Model;
+using Common.Reports;
 using System.Reflection.PortableExecutable;
 
 namespace OnlabStats
@@ -29,6 +30,14 @@ namespace OnlabStats
                     s.Gradings.Add(g);
             }
 
+            foreach(var s in context.Students)
+                foreach((Advisor a, Topic t) in s.TopicRegistrations)
+                {
+                    if (t.RegisteredStudents == null)
+                        t.RegisteredStudents = new List<Student>();
+                    t.RegisteredStudents.Add(s);
+                }
+
             context.PerformBaseChecks();
 
             List<ErrorBase> errors = new List<ErrorBase>();
@@ -47,6 +56,10 @@ namespace OnlabStats
 
             foreach(var e in errors)
                 Console.WriteLine(e);
+
+
+            var stat = new TopicAvailability();
+            stat.ShowReport(context);
         }
     }
 }

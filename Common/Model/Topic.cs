@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Common.Model
 {
-    [DataContract]
+    [DataContract(IsReference = true)]
     public class Topic
     {
         [DataMember] 
@@ -17,15 +17,17 @@ namespace Common.Model
         public int SeatCount { get; set; }
         [DataMember] 
         public string Url { get; set; }
-        [DataMember] 
-        public List<Advisor>? Advisors { get; set; }
-        [DataMember] 
-        public List<CourseCategory>? CourseCategories { get; set; }
+        [DataMember]
+        public List<Advisor> Advisors { get; set; } = new List<Advisor>();
+        [DataMember]
+        public List<CourseCategory> CourseCategories { get; set; } = new List<CourseCategory>();
         [DataMember] 
         public bool IsExternal { get; set; }
 
+        public bool IsForEnglishStudents => Title.StartsWith("Z-ENG");
+
         [DataMember]
-        public List<Student>? RegisteredStudents { get; set; }
+        public List<Student> RegisteredStudents { get; set; } = new List<Student>();
 
         public static async Task<Topic> RetrieveFromWeb(string url, IList<Advisor> advisorListToExtendAsNeeded)
         {

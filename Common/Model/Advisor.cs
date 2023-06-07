@@ -2,7 +2,7 @@
 
 namespace Common.Model
 {
-    [DataContract]
+    [DataContract(IsReference = true)]
     public class Advisor
     {
         [DataMember]

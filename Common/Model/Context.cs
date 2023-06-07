@@ -12,7 +12,7 @@ using System.Xml.Serialization;
 
 namespace Common.Model
 {
-    [DataContract]
+    [DataContract(IsReference = true)]
     public class Context
     {
         [DataMember]
@@ -32,7 +32,7 @@ namespace Common.Model
 
         const string TopicUrlPrefix = @"https://www.aut.bme.hu/Task/";
         public const string GradeImportFilenameSemesterPostfix = "2022_23_2";
-        const bool RetrieveOnlyFirst5Topics = true;
+        const bool RetrieveOnlyFirst5Topics = false;
 
         public static async Task<Context> RetrieveContextFromDataSources(ICourseCategorySource categorySource)
         {
@@ -50,6 +50,7 @@ namespace Common.Model
         public async Task SaveToCache(string cacheFilename)
         {
             DataContractSerializer serializer = new DataContractSerializer(typeof(Context));
+            Console.WriteLine("PreserveObjectReferences: " + serializer.PreserveObjectReferences);
             XmlWriter writer = XmlWriter.Create(cacheFilename);
             serializer.WriteObject(writer, this);
             writer.Close();

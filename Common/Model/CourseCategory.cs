@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace Common.Model
 {
-    [DataContract]
+    [DataContract(IsReference = true)]
     public class CourseCategory
     {
         [DataMember]
