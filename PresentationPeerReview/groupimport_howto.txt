@@ -1,0 +1,26 @@
+groupname,description,groupidnumber,enrolmentkey
+Team 1,Group Assignment Team 1,team1,orange
+Team 2,Group Assignment Team 2,team2,purple
+
+groupingname
+
+ANSI encoding, not UTF-8!
+
+Automatizálható a konzulens adatok és a szekciók kiexportált adatai alapján:
+- advisor_groups.csv
+- session_groups.csv
+(CSV-ben groupingname is!)
+- Session groups: webes táblázat forrása alapján
+
+FIGYELEM: utolsó pillanatban létrehozott szekciók is kerüljenek be csoportokként!
+
+Advisor groups:
+- terhelés exportjából konzulens oszlop duplikátumok nélkül
+
+ \(.+\)\n ----> \n
+ \n ----> ,advisors\n
+ ^ ----> advisor 
+
+ ------------------------------------ Szekciók táblázat copy-paste webről majd regex
+^([^\t]+)\t([^\t]+)\t([^\t]+)\t([^\t]+)\t.+\n
+---> $1, $2, $3, $4;sessions\n

@@ -92,6 +92,21 @@ namespace OnlabTemakHelyzetkep
 
         }
 
+        // Function taking an URL and downloading an excel file and saving it into the file system.
+        private async Task DownloadFile(string url, string filename)
+        {
+            using (var client = new HttpClient())
+            {
+                using (var response = await client.GetAsync(url))
+                {
+                    using (var fileStream = new FileStream(filename, FileMode.Create))
+                    {
+                        await response.Content.CopyToAsync(fileStream);
+                    }
+                }
+            }
+        }
+
         private void AddCourseEnrolledStudentCounts(List<Dictionary<string, string>> courseEnrolledStudentCounts)
         {
             Regex getEnrolledStudentCount = new Regex(@"(\d+)/\d+/\d+");
@@ -226,6 +241,8 @@ namespace OnlabTemakHelyzetkep
             // Csak érdekességként:
             // Külső témákon lévők aránya kurzus kategóriánként
             // Kiírt helyek száma belső és külső témákon?
+
+            // Beszámolókon ki nem jelentkezett még felügyelőnek 2 (3) helyre?
 
             // Félév végére:
             // Utána igazából már a jegyeket is összeszedheti ez a rendszer, többszörös jelentkezésekre jobban felkészülve, mint a másik.

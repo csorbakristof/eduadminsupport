@@ -32,3 +32,7 @@
 /PeerReviewDistributionHelper/obj/*
 /OnlabTemakHelyzetkep/bin/*
 /OnlabTemakHelyzetkep/obj/*
+/Common/bin/*
+/Common/obj/*
+**/obj/*
+**/bin/*

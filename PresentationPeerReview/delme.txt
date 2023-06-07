@@ -1,0 +1,61 @@
+Ács Judit,advisors
+Albert István,advisors
+Bácsi Sándor,advisors
+Balogh Attila Dr.,advisors
+Bányász Gábor,advisors
+Békési Gergő Bendegúz,advisors
+Benedek Zoltán,advisors
+Béres Bálint,advisors
+Blázovics László Dr.,advisors
+Csorba Kristóf Dr.,advisors
+Ekler Péter Dr.,advisors
+Forstner Bertalan Dr.,advisors
+Futó András,advisors
+Gazdi László,advisors
+Gémes Kinga Andrea,advisors
+Gincsai Gábor,advisors
+Gótzy Márton,advisors
+Grad-Gyenge László György,advisors
+Hamar János Dr.,advisors
+Hartmann Ábel,advisors
+Hideg Attila,advisors
+Imre Gábor,advisors
+Iváncsy Szabolcs Dr.,advisors
+Jáhn-Erdős Szilvia,advisors
+Kardos Gergely,advisors
+Kiss Ágoston,advisors
+Kiss Domokos,advisors
+Knyihár Gábor,advisors
+Kökényesi Tamás,advisors
+Kovács Ádám,advisors
+Kovács Adorján,advisors
+Kovács László,advisors
+Kovács Tibor Dr.,advisors
+Kovács Viktor,advisors
+Kővári Bence Dr.,advisors
+Kövesdán Gábor,advisors
+Lengyel László Dr.,advisors
+Max Gyula Dr.,advisors
+Mezei Gergely Dr.,advisors
+Mohammad Saleem,advisors
+Mrad Mohamed Azouz,advisors
+Nagy Ákos,advisors
+Oláh István,advisors
+Pásztor Dániel,advisors
+Pomázi Krisztián,advisors
+Rajacsics Tamás,advisors
+Sik Dávid,advisors
+Simon Gábor,advisors
+Somogyi Ferenc Attila,advisors
+Somogyi Norbert Zsolt,advisors
+Stranyóczky László,advisors
+Stumpf Péter,advisors
+Sütő Zoltán Dr.,advisors
+Szabó Zoltán,advisors
+Szegletes Luca Dr.,advisors
+Szücs Cintia Lia,advisors
+Torma Szabolcs,advisors
+Tóth Tibor,advisors
+Varjasi István Dr.,advisors
+Veréb Szabolcs,advisors
+,advisors
