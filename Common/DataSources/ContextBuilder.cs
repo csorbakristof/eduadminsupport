@@ -38,9 +38,9 @@ namespace Common.DataSources
             context = new Context();
             await GetCourseCategoriesAndCourses(categorySource);
             await GetTopicsAndAdvisorsFromTopicWebPages();
+            await GetEnrolledStudentsFromNeptun();
             await GetStudentsAndTopicRegistrationsFromSupervisionXlsx();
             await GetGradings();
-            await GetEnrolledStudentsFromNeptun();
 
             return context;
         }
@@ -100,6 +100,7 @@ namespace Common.DataSources
                 if (s == null)
                 {
                     s = new Student(studentName, studentNKod);
+                    await Console.Out.WriteLineAsync($"WARNING, {studentName} was not in Neptun but appeared in supervision list. Added to Students.");
                     context.Students.Add(s);
                 }
 
@@ -153,7 +154,7 @@ namespace Common.DataSources
             }
         }
 
-        // Fills Course.EnrolledStudentNKodsFromNeptun, does not add Student objects
+        // Fills Course.EnrolledStudentNKodsFromNeptun, adds Student objects if they are missing
         private async Task GetEnrolledStudentsFromNeptun()
         {
             // Load JEGYIMPORT xlsx files
@@ -169,6 +170,9 @@ namespace Common.DataSources
                     {
                         var nkod = line["Neptun kód"];
                         c.EnrolledStudentNKodsFromNeptun.Add(nkod);
+
+                        if (!context.Students.Any(s=>s.NKod == nkod))
+                            context.Students.Add(new Student(line["Név"], nkod));
                     }
                 }
                 else
@@ -212,7 +216,5 @@ namespace Common.DataSources
             return c;
         }
         #endregion
-
-
     }
 }

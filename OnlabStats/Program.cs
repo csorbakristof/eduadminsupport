@@ -12,6 +12,7 @@ namespace OnlabStats
         static async Task Main(string[] args)
         {
             const string cacheFilename = @"c:\temp\contextcache.xml";
+            const string LastGradingOutputFilename = @"c:\_onlabFelugyeletAdatok\lastGradingOutput.xml";
             Context context = await (new ContextBuilder()).Build(new CourseCategorySource(), cacheFilename);
 
             foreach (var s in context.Students)
@@ -31,6 +32,11 @@ namespace OnlabStats
                         t.RegisteredStudents = new List<Student>();
                     t.RegisteredStudents.Add(s);
                 }
+
+            await Console.Out.WriteLineAsync("---------- Topic reports ---------------");
+
+            var stat = new TopicAvailability();
+            stat.ShowFreeAndTotalAndRequiredSeatsPerCourseCategory(context);
 
             await Console.Out.WriteLineAsync("---------- Running checks ---------------");
 
@@ -58,22 +64,33 @@ namespace OnlabStats
             foreach (var e in errors)
                 Console.WriteLine(e);
 
-            await Console.Out.WriteLineAsync("---------- Topic reports ---------------");
-
-            var stat = new TopicAvailability();
-            stat.ShowFreeAndTotalAndRequiredSeatsPerCourseCategory(context);
-
             await Console.Out.WriteLineAsync("---------- Collecting grades ---------------");
 
             var grader = new GradingsCleanedForNeptun();
             grader.CreateGradings(context);
 
             var skippedStatusCodes = new GradingStatus.StatusEnum[] {
-                GradingStatus.StatusEnum.Success, GradingStatus.StatusEnum.AwaitsGrading, GradingStatus.StatusEnum.OtherCourseInNeptun};
+                GradingStatus.StatusEnum.Success, GradingStatus.StatusEnum.AwaitsGrading, GradingStatus.StatusEnum.OtherCourseInNeptun,
+                GradingStatus.StatusEnum.AwaitsGradingWithoutEnrollment};
             await Console.Out.WriteLineAsync($"Grading statuses (not showing {string.Join(',', skippedStatusCodes)}):");
             foreach (var status in grader.GetStatuses())
                 if (!skippedStatusCodes.Contains(status.Status))
                     Console.WriteLine(status.GetConsoleString());
+
+            //grader.GenerateExcelFiles(@"c:\temp\delme\");
+            //grader.SaveGradingOutput(LastGradingOutputFilename);
+
+            await Console.Out.WriteLineAsync("---------- Student errors (from above) with grading status ---------------");
+            foreach(var e in errors)
+            {
+                if (e is StudentError)
+                {
+                    Student s = (e as StudentError).Student;
+                    await Console.Out.WriteLineAsync($"--- Student {s.Name} ---");
+                    await Console.Out.WriteLineAsync($"Error: {e}");
+                    await Console.Out.WriteLineAsync($"Grading status: {grader.GetStatuses().SingleOrDefault(gs=>gs.Student==s)?.GetConsoleString()}");
+                }
+            }
 
         }
     }

@@ -74,6 +74,9 @@ WhoDidNotAssignGradesYet: kik nem írták még be a jegyeket?
 
 NeptunGradeImport: jegyek a Neptunba importáláshoz
 
+# Egyebek
+
+Külső témán lévő hallgatók aránya?
 
 ---------------------
             Console.WriteLine("========== Statistics ==========");

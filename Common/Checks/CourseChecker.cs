@@ -16,7 +16,8 @@ namespace Common.Checks
 
             if (c.EnrolledStudentCountInNeptun != c.EnrolledStudentNKodsFromNeptun.Count)
             {
-                if (context.CourseCategories.Any(cc => cc.Courses.Contains(c))) // Otherwise we do not care...
+                // We may be running the application without detailed export for all Neptun courses.
+                if (context.CourseCategories.Any(cc => cc.Courses.Contains(c)) && c.EnrolledStudentNKodsFromNeptun.Count>0) // Otherwise we do not care...
                     throw new ModelInconsistencyException("Course's student count and length of student list does not match in Neptun!");
             }
 

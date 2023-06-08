@@ -1,4 +1,5 @@
 ﻿using Common.Checks;
+using Common.Helpers;
 using Common.Model;
 using System;
 using System.Collections.Generic;
@@ -6,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 
 namespace Common.Reports
 {
@@ -13,15 +15,15 @@ namespace Common.Reports
     {
         public struct GradingForNeptun
         {
-            public string ClassCourseCode;
+            public string XlsFilename;
             public string NKod;
             public string Grade;
         }
 
-        private List<GradingForNeptun> gradings = new List<GradingForNeptun>();
+        private List<GradingForNeptun> collectedGradings = new List<GradingForNeptun>();
         private List<GradingStatus> statuses = new List<GradingStatus>();
 
-        public IEnumerable<GradingForNeptun> GetGradings() => gradings;
+        public IEnumerable<GradingForNeptun> GetGradings() => collectedGradings;
         public IEnumerable<GradingStatus> GetStatuses() => statuses;
 
         public void CreateGradings(Context context)
@@ -58,6 +60,7 @@ namespace Common.Reports
             }
         }
 
+        #region Methods used during grade collection
         private void addGradingWithSingleGradingSingleCourse(Student s, Course course, Grading grading)
         {
             if (course.ClassCode == grading.ClassCodeInGrading)
@@ -89,7 +92,7 @@ namespace Common.Reports
 
         private void addGrading(Course course, Student s, int grade, Grading grading)
         {
-            gradings.Add(new GradingForNeptun() { ClassCourseCode = course.CourseCodeForExportFilename(), NKod = s.NKod, Grade = grade.ToString() });
+            collectedGradings.Add(new GradingForNeptun() { XlsFilename = course.CourseCodeForExportFilename(), NKod = s.NKod, Grade = grade.ToString() });
             statuses.Add(new GradingStatus()
             {
                 TargetCourseInNeptun = course,
@@ -101,7 +104,7 @@ namespace Common.Reports
 
         private void addGradingWithCourseCodeMismatch(Course course, Student s, int grade, Grading grading)
         {
-            gradings.Add(new GradingForNeptun() { ClassCourseCode = course.CourseCodeForExportFilename(), NKod = s.NKod, Grade = grade.ToString() });
+            collectedGradings.Add(new GradingForNeptun() { XlsFilename = course.CourseCodeForExportFilename(), NKod = s.NKod, Grade = grade.ToString() });
             statuses.Add(new GradingStatus()
             {
                 TargetCourseInNeptun = course,
@@ -114,12 +117,18 @@ namespace Common.Reports
 
         private void reportNoGradingEntry(Course? course, Student s)
         {
+            string details;
+            if (s.TopicRegistrations.Count > 0)
+                details = $"Advisors: {string.Join(',', s.TopicRegistrations.Select(tr => tr.Item1))}";
+            else
+                details = "No topic registration either.";
+
             statuses.Add(new GradingStatus()
             {
                 TargetCourseInNeptun = course,
                 Student = s,
                 Status = GradingStatus.StatusEnum.NoGradingEntry,
-                Details = $"Advisors: {string.Join(',', s.TopicRegistrations.Select(tr => tr.Item1))}"
+                Details = details
             });
         }
 
@@ -129,9 +138,43 @@ namespace Common.Reports
             {
                 TargetCourseInNeptun = course,
                 Student = s,
-                Advisor = s.TopicRegistrations.First().Item1 as Advisor,
-                Status = GradingStatus.StatusEnum.AwaitsGrading
+                Advisor = s.TopicRegistrations.FirstOrDefault().Item1 as Advisor,
+                Status = (course!=null) ? GradingStatus.StatusEnum.AwaitsGrading : GradingStatus.StatusEnum.AwaitsGradingWithoutEnrollment
             });
+        }
+        #endregion
+
+        public void GenerateExcelFiles(string path)
+        {
+            Dictionary<string, List<GradingForNeptun>> dict = new Dictionary<string, List<GradingForNeptun>>();
+
+            foreach (GradingForNeptun grading in collectedGradings)
+            {
+                if (!dict.ContainsKey(grading.XlsFilename))
+                {
+                    dict[grading.XlsFilename] = new List<GradingForNeptun>();
+                }
+                dict[grading.XlsFilename].Add(grading);
+            }
+
+            // Use the 'dict' dictionary to generate Excel files
+            NeptunImportXlsxWriter writer = new NeptunImportXlsxWriter();
+            foreach (var filename in dict.Keys)
+            {
+                Console.WriteLine($"Writing file: {filename}...");
+                File.Delete(path + filename);
+                writer.WriteEntriesToExcel(path + filename, dict[filename].Select(gfn =>
+                    new NeptunImportXlsxWriter.Entry() { NKod=gfn.NKod, Grade=gfn.Grade }));
+            }
+        }
+
+        public void SaveGradingOutput(string lastGradingOutputFilename)
+        {
+            XmlSerializer serializer = new XmlSerializer(typeof(List<GradingForNeptun>));
+            using (System.IO.StreamWriter file = new System.IO.StreamWriter(lastGradingOutputFilename))
+            {
+                serializer.Serialize(file, collectedGradings);
+            }
         }
     }
 }

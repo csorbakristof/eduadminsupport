@@ -21,11 +21,12 @@ namespace Common.Reports
             MultipleCoursesInNeptun,
             NoTopicNoAdvisor,
             NoNeptunCourseNoTopic, // Why is the student in the list at all?
-            NoGradingEntry
+            NoGradingEntry,
+            AwaitsGradingWithoutEnrollment  // Not graded but appears in the portal, but not enrolled in any courses in Neptun
         }
 
         private StatusEnum[] handledStatusCodes = new StatusEnum[] { StatusEnum.Success, StatusEnum.OtherCourseInNeptun,
-            StatusEnum.NoTopicNoAdvisor, StatusEnum.NoNeptunCourseNoTopic };
+            StatusEnum.NoTopicNoAdvisor, StatusEnum.NoNeptunCourseNoTopic, StatusEnum.AwaitsGradingWithoutEnrollment };
 
         public bool IsHandled => handledStatusCodes.Contains(Status);
 
