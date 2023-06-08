@@ -22,7 +22,7 @@ namespace Common.Model
         public List<Grading> Gradings { get; set; } = new List<Grading>();
 
         [DataMember]
-        public List<(Advisor, Topic)>? TopicRegistrations { get; set; } // Based on AdvisorLoadSource
+        public List<(Advisor, Topic)> TopicRegistrations { get; set; } = new List<(Advisor, Topic)>(); // Based on AdvisorLoadSource
 
         public Student(string name, string nKod)
         {

@@ -43,7 +43,7 @@ namespace Common.Model
             return topicUrls;
         }
 
-        internal async Task GetCourses(IEnumerable<Course> courseList)
+        internal async Task CollectCoursesOfCourseCategoryBasedOnCourseCategoryWebPages(IEnumerable<Course> courseList)
         {
             var httpClient = new HttpClient();
 
@@ -59,7 +59,7 @@ namespace Common.Model
             foreach (Match match in matches)
             {
                 var classCode = match.Groups[1].Value;
-                Courses.AddRange(courseList.Where(c => c.ClassCode == classCode)); // May have multiple courses in that class
+                Courses.AddRange(courseList.Where(c => c.ClassCode == classCode)); // May have multiple courses with the same class code
             }
         }
 

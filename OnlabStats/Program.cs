@@ -12,13 +12,7 @@ namespace OnlabStats
         static async Task Main(string[] args)
         {
             const string cacheFilename = @"c:\temp\contextcache.xml";
-            Context? context = null;
-            context = await Context.LoadFromCacheIfAvailable(cacheFilename);
-            if (context == null)
-            {
-                context = await Context.RetrieveContextFromDataSources(new CourseCategorySource());
-                await context.SaveToCache(cacheFilename);
-            }
+            Context context = await (new ContextBuilder()).Build(new CourseCategorySource(), cacheFilename);
 
             foreach (var s in context.Students)
                 s.EnrolledCourses = context.Courses.Where(c => c.EnrolledStudentNKodsFromNeptun.Contains(s.NKod)).ToList();
@@ -38,6 +32,9 @@ namespace OnlabStats
                     t.RegisteredStudents.Add(s);
                 }
 
+            await Console.Out.WriteLineAsync("---------- Running checks ---------------");
+
+
             context.PerformBaseChecks();
 
             List<ErrorBase> errors = new List<ErrorBase>();
@@ -51,15 +48,33 @@ namespace OnlabStats
                 errors.AddRange(gradingChecker.Check(g, context));
 
             var courseChecker = new CourseChecker();
-            foreach(var c in context.Courses)
+            foreach (var c in context.Courses)
                 errors.AddRange(courseChecker.Check(c, context));
 
-            foreach(var e in errors)
+            var topicChecker = new TopicChecker();
+            foreach (var t in context.Topics)
+                errors.AddRange(topicChecker.Check(t, context));
+
+            foreach (var e in errors)
                 Console.WriteLine(e);
 
+            await Console.Out.WriteLineAsync("---------- Topic reports ---------------");
 
             var stat = new TopicAvailability();
-            stat.ShowReport(context);
+            stat.ShowFreeAndTotalAndRequiredSeatsPerCourseCategory(context);
+
+            await Console.Out.WriteLineAsync("---------- Collecting grades ---------------");
+
+            var grader = new GradingsCleanedForNeptun();
+            grader.CreateGradings(context);
+
+            var skippedStatusCodes = new GradingStatus.StatusEnum[] {
+                GradingStatus.StatusEnum.Success, GradingStatus.StatusEnum.AwaitsGrading, GradingStatus.StatusEnum.OtherCourseInNeptun};
+            await Console.Out.WriteLineAsync($"Grading statuses (not showing {string.Join(',', skippedStatusCodes)}):");
+            foreach (var status in grader.GetStatuses())
+                if (!skippedStatusCodes.Contains(status.Status))
+                    Console.WriteLine(status.GetConsoleString());
+
         }
     }
 }

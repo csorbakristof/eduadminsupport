@@ -32,7 +32,11 @@ namespace Common.Checks
             if (context.Gradings == null)
                 throw new ModelInconsistencyException("Context.Gradings not set.");
             if (context.Gradings.Count(g => g.StudentNKodFromGrading == s.NKod) == 0)
+            {
                 yield return new StudentError() { Message = "Student has no gradings", Student = s };
+                if (s.TopicRegistrations.Count > 0)
+                    yield return new StudentError() { Message = "Student has no grading entry but has topic registrations!", Student = s };
+            }
 
             foreach (var c in s.EnrolledCourses)
             {

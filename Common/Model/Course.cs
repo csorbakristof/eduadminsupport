@@ -23,5 +23,6 @@ namespace Common.Model
 
         // SemesterPostfix: like '2022_23_2'
         public string GradeImportFilename(string semesterPostfix) => $"jegyimport_BME{ClassCode}_{CourseCode}_{semesterPostfix}.xlsx";
+        public string CourseCodeForExportFilename() => $"BME{ClassCode}_{CourseCode}_4Neptun.xlsx";
     }
 }

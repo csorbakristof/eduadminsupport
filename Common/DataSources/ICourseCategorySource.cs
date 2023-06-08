@@ -9,6 +9,6 @@ namespace Common.DataSources
 {
     public interface ICourseCategorySource
     {
-        List<CourseCategory> GetCourseCategories();
+        IEnumerable<CourseCategory> GetCourseCategories();
     }
 }

@@ -17,5 +17,10 @@ namespace Common.Model
         {
             Name = string.Empty;
         }
+
+        public override string ToString()
+        {
+            return Name;
+        }
     }
 }

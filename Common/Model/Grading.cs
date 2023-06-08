@@ -14,12 +14,14 @@ namespace Common.Model
         public string StudentNKodFromGrading { get; set; }
 
         [DataMember]
-        public Topic Topic { get; set; }
-
-        [DataMember]
         public string ClassCodeInGrading { get; set; }
 
         [DataMember]
         public int? Grade { get; set; }
+
+        override public string ToString()
+        {
+            return $"(Grading {StudentNKodFromGrading} in {ClassCodeInGrading}: {Grade})";
+        }
     }
 }
