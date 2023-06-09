@@ -4,6 +4,7 @@ using Common.Helpers;
 using Common.Model;
 using Common.Reports;
 using System.Reflection.PortableExecutable;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace OnlabStats
 {
@@ -14,6 +15,7 @@ namespace OnlabStats
             const string cacheFilename = @"c:\temp\contextcache.xml";
             const string LastGradingOutputFilename = @"c:\_onlabFelugyeletAdatok\lastGradingOutput.xml";
             Context context = await (new ContextBuilder()).Build(new CourseCategorySource(), cacheFilename);
+            const string StatusExcelFilename = @"c:\temp\status.xlsx";
 
             foreach (var s in context.Students)
                 s.EnrolledCourses = context.Courses.Where(c => c.EnrolledStudentNKodsFromNeptun.Contains(s.NKod)).ToList();
@@ -40,27 +42,7 @@ namespace OnlabStats
 
             await Console.Out.WriteLineAsync("---------- Running checks ---------------");
 
-
-            context.PerformBaseChecks();
-
-            List<ErrorBase> errors = new List<ErrorBase>();
-
-            var studentChecker = new StudentChecker();
-            foreach(var s in context.Students)
-                errors.AddRange(studentChecker.Check(s, context));
-
-            var gradingChecker = new GradingChecker();
-            foreach(var g in context.Gradings)
-                errors.AddRange(gradingChecker.Check(g, context));
-
-            var courseChecker = new CourseChecker();
-            foreach (var c in context.Courses)
-                errors.AddRange(courseChecker.Check(c, context));
-
-            var topicChecker = new TopicChecker();
-            foreach (var t in context.Topics)
-                errors.AddRange(topicChecker.Check(t, context));
-
+            var errors = RunChecks(context);
             foreach (var e in errors)
                 Console.WriteLine(e);
 
@@ -92,6 +74,43 @@ namespace OnlabStats
                 }
             }
 
+            WriteUngradedStudentsToExcel(StatusExcelFilename, grader.GetStatuses());
+        }
+
+        private static List<ErrorBase> RunChecks(Context context)
+        {
+            context.PerformBaseChecks();
+
+            List<ErrorBase> errors = new List<ErrorBase>();
+
+            var studentChecker = new StudentChecker();
+            foreach (var s in context.Students)
+                errors.AddRange(studentChecker.Check(s, context));
+
+            var gradingChecker = new GradingChecker();
+            foreach (var g in context.Gradings)
+                errors.AddRange(gradingChecker.Check(g, context));
+
+            var courseChecker = new CourseChecker();
+            foreach (var c in context.Courses)
+                errors.AddRange(courseChecker.Check(c, context));
+
+            var topicChecker = new TopicChecker();
+            foreach (var t in context.Topics)
+                errors.AddRange(topicChecker.Check(t, context));
+
+            return errors;
+        }
+
+        private static void WriteUngradedStudentsToExcel(string filename, IEnumerable<GradingStatus> statuses)
+        {
+            using(GenericExcelWriter writer = new GenericExcelWriter(filename))
+            {
+                foreach(var status in statuses.Where(s=>s.Status == GradingStatus.StatusEnum.AwaitsGrading))
+                {
+                    writer.AppendRow(new string[] { status.Student.Name, status.Student.NKod, status.Status.ToString(), status.Advisor?.Name });
+                }
+            }
         }
     }
 }
