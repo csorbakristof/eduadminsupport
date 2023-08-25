@@ -65,6 +65,8 @@ WhoIsNotInASessionYet: kik nem kerültek még be egy szekcióba sem?
 
 # Beszámolók után eredmények beírása
 
+Ki nem volt beszámolón?
+Ki értékelt szövegesen is a Moodle peer review-ban?
 
 ## Pingelés, hogy ki nem írta még be a jegyeket
 

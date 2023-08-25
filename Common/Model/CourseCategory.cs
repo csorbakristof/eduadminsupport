@@ -59,6 +59,10 @@ namespace Common.Model
             foreach (Match match in matches)
             {
                 var classCode = match.Groups[1].Value;
+                
+                if (classCode == "Temalabor") classCode = "VIAUAL00";    // Department portal mystery...
+                
+                if (!classCode.StartsWith("VIAU")) throw new Exception($"Invalid class code URL: {classCode}, URL: {Url}");
                 Courses.AddRange(courseList.Where(c => c.ClassCode == classCode)); // May have multiple courses with the same class code
             }
         }

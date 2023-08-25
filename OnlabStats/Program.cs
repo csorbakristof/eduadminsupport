@@ -3,52 +3,92 @@ using Common.DataSources;
 using Common.Helpers;
 using Common.Model;
 using Common.Reports;
-using System.Reflection.PortableExecutable;
+using OfficeOpenXml.LoadFunctions.Params;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace OnlabStats
 {
     internal class Program
     {
+        const string cacheFilename = @"c:\_onlabFelugyeletAdatok\contextcache.xml";
+        const string LastGradingOutputFilename = @"c:\_onlabFelugyeletAdatok\lastGradingOutput.xml";
+        const string StatusExcelFilename = @"c:\_onlabFelugyeletAdatok\status.xlsx";
+        const string AdvisorStatsXlsFilename = @"c:\_onlabFelugyeletAdatok\AdvisorCapacityReport.xlsx";
+
+        const bool ExpectGradings = false;  // false at the beginning of the term
+
+        private Context context;
+
         static async Task Main(string[] args)
         {
-            const string cacheFilename = @"c:\temp\contextcache.xml";
-            const string LastGradingOutputFilename = @"c:\_onlabFelugyeletAdatok\lastGradingOutput.xml";
-            Context context = await (new ContextBuilder()).Build(new CourseCategorySource(), cacheFilename);
-            const string StatusExcelFilename = @"c:\temp\status.xlsx";
+            var p = new Program();
+            await p.LoadDataAsync();
+            await p.ShowAdvisorCapacityStats();
+
+            await p.ShowTopicReports();
+            await p.RunChecks();
+            if (ExpectGradings)
+            {
+                await p.CollectGradesAndGenerateGradingOutputFiles();
+                await p.ShowErrorsWithGradingStatus();
+            }
+        }
+
+        private async Task ShowAdvisorCapacityStats()
+        {
+            await Console.Out.WriteLineAsync("---------- Advisor capacity stats ---------------");
+
+            var stat = new AdvisorCapacityAndLoad();
+            stat.ShowAdvisorCapacityAndLoad(context, AdvisorStatsXlsFilename);
+        }
+
+        private async Task LoadDataAsync()
+        {
+            context = await(new ContextBuilder()).Build(new CourseCategorySource(), cacheFilename);
 
             foreach (var s in context.Students)
                 s.EnrolledCourses = context.Courses.Where(c => c.EnrolledStudentNKodsFromNeptun.Contains(s.NKod)).ToList();
 
-            foreach(var g in context.Gradings)
+            foreach (var g in context.Gradings)
             {
                 var s = context.Students.Where(s => s.NKod == g.StudentNKodFromGrading).SingleOrDefault();
                 if (s != null)
                     s.Gradings.Add(g);
             }
 
-            foreach(var s in context.Students)
-                foreach((Advisor a, Topic t) in s.TopicRegistrations)
+            foreach (var s in context.Students)
+                foreach ((Advisor a, Topic t) in s.TopicRegistrations)
                 {
                     if (t.RegisteredStudents == null)
                         t.RegisteredStudents = new List<Student>();
                     t.RegisteredStudents.Add(s);
                 }
+        }
 
+        private async Task ShowTopicReports()
+        {
             await Console.Out.WriteLineAsync("---------- Topic reports ---------------");
 
             var stat = new TopicAvailability();
             stat.ShowFreeAndTotalAndRequiredSeatsPerCourseCategory(context);
+        }
 
+        private List<ErrorBase> errors;
+        private async Task RunChecks()
+        {
             await Console.Out.WriteLineAsync("---------- Running checks ---------------");
 
-            var errors = RunChecks(context);
+            errors = RunChecks(ExpectGradings);
             foreach (var e in errors)
                 Console.WriteLine(e);
+        }
 
+        private GradingsCleanedForNeptun grader;
+        private async Task CollectGradesAndGenerateGradingOutputFiles()
+        {
             await Console.Out.WriteLineAsync("---------- Collecting grades ---------------");
 
-            var grader = new GradingsCleanedForNeptun();
+            grader = new GradingsCleanedForNeptun();
             grader.CreateGradings(context);
 
             var skippedStatusCodes = new GradingStatus.StatusEnum[] {
@@ -59,25 +99,32 @@ namespace OnlabStats
                 if (!skippedStatusCodes.Contains(status.Status))
                     Console.WriteLine(status.GetConsoleString());
 
-            //grader.GenerateExcelFiles(@"c:\temp\delme\");
-            //grader.SaveGradingOutput(LastGradingOutputFilename);
+            grader.GenerateExcelFiles(@"c:\temp\delme\");
+            grader.SaveGradingOutput(LastGradingOutputFilename);
+        }
 
+        private async Task ShowErrorsWithGradingStatus()
+        {
             await Console.Out.WriteLineAsync("---------- Student errors (from above) with grading status ---------------");
-            foreach(var e in errors)
+            foreach (var e in errors)
             {
                 if (e is StudentError)
                 {
                     Student s = (e as StudentError).Student;
                     await Console.Out.WriteLineAsync($"--- Student {s.Name} ---");
                     await Console.Out.WriteLineAsync($"Error: {e}");
-                    await Console.Out.WriteLineAsync($"Grading status: {grader.GetStatuses().SingleOrDefault(gs=>gs.Student==s)?.GetConsoleString()}");
+                    await Console.Out.WriteLineAsync($"Grading status: {grader.GetStatuses().SingleOrDefault(gs => gs.Student == s)?.GetConsoleString()}");
                 }
             }
 
             WriteUngradedStudentsToExcel(StatusExcelFilename, grader.GetStatuses());
         }
 
-        private static List<ErrorBase> RunChecks(Context context)
+
+
+
+
+        private List<ErrorBase> RunChecks(bool expectGradings)
         {
             context.PerformBaseChecks();
 
@@ -87,9 +134,12 @@ namespace OnlabStats
             foreach (var s in context.Students)
                 errors.AddRange(studentChecker.Check(s, context));
 
-            var gradingChecker = new GradingChecker();
-            foreach (var g in context.Gradings)
-                errors.AddRange(gradingChecker.Check(g, context));
+            if (!expectGradings)
+            {
+                var gradingChecker = new GradingChecker();
+                foreach (var g in context.Gradings)
+                    errors.AddRange(gradingChecker.Check(g, context));
+            }
 
             var courseChecker = new CourseChecker();
             foreach (var c in context.Courses)

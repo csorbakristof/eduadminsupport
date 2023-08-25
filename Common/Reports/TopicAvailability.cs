@@ -13,7 +13,6 @@ namespace Common.Reports
         {
             var counters = new Dictionary<CourseCategory, (int HunTotal, int EngTotal, int HunFree, int EngFree, int HunRequired, int EngRequired)>();
 
-            
             foreach (var cat in context.CourseCategories)
             {
                 int enrollmentCountHun = 0;

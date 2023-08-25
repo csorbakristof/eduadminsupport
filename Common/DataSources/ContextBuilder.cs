@@ -13,11 +13,11 @@ namespace Common.DataSources
     public class ContextBuilder
     {
         const string TopicUrlPrefix = @"https://www.aut.bme.hu/Task/";
-        public const string GradeImportFilenameSemesterPostfix = "2022_23_2";
+        public const string GradeImportFilenameSemesterPostfix = "2023_24_1";
         const bool RetrieveOnlyFirst5Topics = false;
-        const string PortalGradingExportFilename = @"c:\_onlabFelugyeletAdatok\tema-osztalyzatok-22-23-tavasz.xlsx";
-        const string PortalTerhelesExportFilename = @"c:\_onlabFelugyeletAdatok\Terheles_22-23-tavasz.xlsx";
-        const string NeptunExportFilename = @"c:\_onlabFelugyeletAdatok\kurzusok_neptunExport.xlsx";
+        const string PortalGradingExportFilename = @"c:\_onlabFelugyeletAdatok\tema-osztalyzatok-23-24-osz.xlsx";
+        const string PortalTerhelesExportFilename = @"c:\_onlabFelugyeletAdatok\Terheles_23-24-osz.xlsx";
+        const string NeptunExportFilename = @"c:\_onlabFelugyeletAdatok\export_kurzuslista.xlsx";
         const string NeptunCourseGradeImportFilesPath = @"c:\_onlabFelugyeletAdatok\";
 
         public async Task<Context> Build(ICourseCategorySource categorySource, string cacheFilename)
