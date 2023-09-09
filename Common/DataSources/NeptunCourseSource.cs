@@ -17,6 +17,7 @@ namespace Common.DataSources
             foreach(var neptunEntryLine in neptunTable)
             {
                 Course c = new Course();
+                c.Name = neptunEntryLine["Tárgy név"];
                 c.ClassCode = neptunEntryLine["Tárgykód"].Substring(3);  // Remove the BME prefix
                 c.CourseCode = neptunEntryLine["Kurzus kód"];
                 var enrollmentData = neptunEntryLine["Létszám"];

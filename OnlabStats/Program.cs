@@ -14,6 +14,8 @@ namespace OnlabStats
         const string LastGradingOutputFilename = @"c:\_onlabFelugyeletAdatok\lastGradingOutput.xml";
         const string StatusExcelFilename = @"c:\_onlabFelugyeletAdatok\status.xlsx";
         const string AdvisorStatsXlsFilename = @"c:\_onlabFelugyeletAdatok\AdvisorCapacityReport.xlsx";
+        const string TopicBasicsReportFilename = @"c:\_onlabFelugyeletAdatok\TopicBasicsReport.xlsx";
+        const string StudentListWithNoTopicRegistrations = @"c:\_onlabFelugyeletAdatok\StudentsWithoutTopicsReport.xlsx";
 
         const bool ExpectGradings = false;  // false at the beginning of the term
 
@@ -26,6 +28,7 @@ namespace OnlabStats
             await p.ShowAdvisorCapacityStats();
 
             await p.ShowTopicReports();
+
             await p.RunChecks();
             if (ExpectGradings)
             {
@@ -61,7 +64,9 @@ namespace OnlabStats
                 {
                     if (t.RegisteredStudents == null)
                         t.RegisteredStudents = new List<Student>();
-                    t.RegisteredStudents.Add(s);
+                    // Topics with multiple advisor should not add student multiple times!
+                    if (!t.RegisteredStudents.Contains(s))
+                        t.RegisteredStudents.Add(s);
                 }
         }
 
@@ -71,6 +76,12 @@ namespace OnlabStats
 
             var stat = new TopicAvailability();
             stat.ShowFreeAndTotalAndRequiredSeatsPerCourseCategory(context);
+
+            var topicBasics = new TopicBasics();
+            topicBasics.GenerateReport(context, TopicBasicsReportFilename);
+
+            var n = context.Courses.Sum(e => e.EnrolledStudentCountInNeptun);
+            await Console.Out.WriteLineAsync($"Total enrolled student count: {n}");
         }
 
         private List<ErrorBase> errors;
@@ -79,8 +90,17 @@ namespace OnlabStats
             await Console.Out.WriteLineAsync("---------- Running checks ---------------");
 
             errors = RunChecks(ExpectGradings);
+
             foreach (var e in errors)
                 Console.WriteLine(e);
+
+            var studentsWithNoTopicReg = errors.Where(e => e.Message.Contains("Student has no topic registrations")).Select(e=>((StudentError)e).Student);
+            GenericExcelWriter.WriteToNewExcelFile(StudentListWithNoTopicRegistrations,
+                new string[] { "Course name", "Course code", "Student name", "NKod" },
+                studentsWithNoTopicReg.Select(s => new string[] {
+                    s.EnrolledCourses.Single().Name,
+                    s.EnrolledCourses.Single().ToString(),
+                    s.Name, s.NKod }));
         }
 
         private GradingsCleanedForNeptun grader;
@@ -119,10 +139,6 @@ namespace OnlabStats
 
             WriteUngradedStudentsToExcel(StatusExcelFilename, grader.GetStatuses());
         }
-
-
-
-
 
         private List<ErrorBase> RunChecks(bool expectGradings)
         {

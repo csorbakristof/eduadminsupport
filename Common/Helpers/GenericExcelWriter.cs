@@ -9,24 +9,13 @@ namespace Common.Helpers
 {
     public class GenericExcelWriter : IDisposable
     {
-        public static void WriteToNewExcelFile(string fileName, IEnumerable<string[]> lines)
+        public static void WriteToNewExcelFile(string fileName, string[] headers, IEnumerable<string[]> lines)
         {
-            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-            if (System.IO.File.Exists(fileName))
-                System.IO.File.Delete(fileName);
-
-            using (var package = new ExcelPackage(new FileInfo(fileName)))
+            using (var writer = new GenericExcelWriter(fileName))
             {
-                var worksheet = package.Workbook.Worksheets.Add("Default");
-                int rowIndex = 0;
+                writer.AppendRow(headers);
                 foreach (var l in lines)
-                {
-                    for (int i = 0; i < l.Length; i++)
-                        worksheet.Cells[rowIndex + 1, i + 1].Value = l[i];
-                    rowIndex++;
-                }
-
-                package.Save();
+                    writer.AppendRow(l);
             }
         }
 
@@ -40,7 +29,7 @@ namespace Common.Helpers
                 System.IO.File.Delete(filename);
 
             excel = new ExcelPackage(new FileInfo(filename));
-            worksheet = excel.Workbook.Worksheets.Add("Default");
+            worksheet = excel.Workbook.Worksheets.Add(worksheetname);
             rowIndex = 0;
         }
 
@@ -55,6 +44,11 @@ namespace Common.Helpers
         {
             excel.Save();
             excel.Dispose();
+        }
+
+        public static void WriteToNewExcelFile(object studentListWithNoTopicRegistrations, string[] strings, object value)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -74,7 +74,7 @@ namespace Common.Model
 
         public override string ToString()
         {
-            return Title;
+            return $"{this.RegisteredStudents.Count}/{this.SeatCount} {Title}";
         }
     }
 }

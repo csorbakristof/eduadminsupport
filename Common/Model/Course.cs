@@ -6,6 +6,8 @@ namespace Common.Model
     public class Course
     {
         [DataMember]
+        public string Name { get; internal set; }
+        [DataMember]
         public string ClassCode { get; set; } = string.Empty;   // Like VIAUAL00
         [DataMember]
         public string CourseCode { get; set; } = string.Empty;  // Like L
@@ -15,7 +17,6 @@ namespace Common.Model
         public int? EnrolledStudentCountInNeptun { get; set; }
         [DataMember]
         public List<string> EnrolledStudentNKodsFromNeptun { get; set; } = new List<string>();
-
         public override string ToString()
         {
             return $"{ClassCode}-{CourseCode}";

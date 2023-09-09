@@ -168,7 +168,7 @@ namespace Common.DataSources
                     c.EnrolledStudentNKodsFromNeptun = new List<string>();
                     foreach (var line in lines)
                     {
-                        var nkod = line["Neptun kód"];
+                        var nkod = line["Neptunkód"];
                         c.EnrolledStudentNKodsFromNeptun.Add(nkod);
 
                         if (!context.Students.Any(s=>s.NKod == nkod))

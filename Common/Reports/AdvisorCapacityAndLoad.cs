@@ -16,9 +16,10 @@ namespace Common.Reports
     {
         class AdvisorCounters
         {
-            public int TotalCapacity;
-            public int FreeSeatCount;
-            public int CurrentStudentCount;
+            // Some topics are shared among multiple advisors
+            public float TotalCapacity;
+            public float FreeSeatCount;
+            public float CurrentStudentCount;
 
             public AdvisorCounters()
             {
@@ -32,18 +33,20 @@ namespace Common.Reports
 
         public async Task ShowAdvisorCapacityAndLoad(Context context, string? xlsFilenameOrNull)
         {
+            // Students on topics with multiple advisors count to every advisor!
             counters = new Dictionary<Advisor, AdvisorCounters>();
 
             foreach (var topic in context.Topics)
             {
+                float advisorCount = topic.Advisors.Count;
                 foreach(var advisor in topic.Advisors)
                 {
                     if (!counters.Keys.Contains(advisor))
                         counters.Add(advisor, new AdvisorCounters());
 
-                    counters[advisor].TotalCapacity += topic.SeatCount;
-                    counters[advisor].FreeSeatCount += topic.SeatCount - topic.RegisteredStudents.Count;
-                    counters[advisor].CurrentStudentCount += topic.RegisteredStudents.Count;
+                    counters[advisor].TotalCapacity += topic.SeatCount / advisorCount;
+                    counters[advisor].FreeSeatCount += (topic.SeatCount - topic.RegisteredStudents.Count) / advisorCount;
+                    counters[advisor].CurrentStudentCount += topic.RegisteredStudents.Count / advisorCount;
                 }
             }
 
