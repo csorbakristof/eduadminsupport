@@ -16,6 +16,7 @@ namespace OnlabStats
         const string AdvisorStatsXlsFilename = @"c:\_onlabFelugyeletAdatok\AdvisorCapacityReport.xlsx";
         const string TopicBasicsReportFilename = @"c:\_onlabFelugyeletAdatok\TopicBasicsReport.xlsx";
         const string StudentListWithNoTopicRegistrations = @"c:\_onlabFelugyeletAdatok\StudentsWithoutTopicsReport.xlsx";
+        // Note: further file location settings in Common.DataSources.ContextBuilder
 
         const bool ExpectGradings = false;  // false at the beginning of the term
 
@@ -28,6 +29,8 @@ namespace OnlabStats
             await p.ShowAdvisorCapacityStats();
 
             await p.ShowTopicReports();
+
+            await p.ShowPresentationOrganizationReports();
 
             await p.RunChecks();
             if (ExpectGradings)
@@ -69,6 +72,15 @@ namespace OnlabStats
                         t.RegisteredStudents.Add(s);
                 }
         }
+
+        private async Task ShowPresentationOrganizationReports()
+        {
+            await Console.Out.WriteLineAsync("---------- For organizing the presentations ---------------");
+
+            var stat = new PresentationReports();
+            stat.ShowPresentingStudentCounts(context);
+        }
+
 
         private async Task ShowTopicReports()
         {

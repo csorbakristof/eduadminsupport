@@ -7,12 +7,27 @@ namespace Common.Model
     [DataContract(IsReference = true)]
     public class CourseCategory
     {
+        public enum MajorEnum
+        {
+            Info, Villany, Mecha
+        }
+
+        public enum LevelEnum
+        {
+            BProf, BSc, MSc
+        }
+
         [DataMember]
         public string Title { get; set; }
         [DataMember]
         public string Url { get; set; }
         [DataMember]
         public List<Course> Courses { get; set; } = new List<Course>();
+        [DataMember]
+        public MajorEnum Major { get; set; }
+        [DataMember]
+        public LevelEnum Level { get; set; }
+
 
         public CourseCategory()
         {
@@ -20,10 +35,12 @@ namespace Common.Model
             Url = string.Empty;
         }
 
-        public CourseCategory(string title, string url)
+        public CourseCategory(string title, string url, MajorEnum major, LevelEnum level)
         {
             Title = title;
             Url = url;
+            Major = major;
+            Level = level;
         }
 
         public async Task<IEnumerable<string>> GetTopicUrls(string urlPrefix)

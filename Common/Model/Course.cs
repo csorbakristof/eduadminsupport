@@ -17,6 +17,9 @@ namespace Common.Model
         public int? EnrolledStudentCountInNeptun { get; set; }
         [DataMember]
         public List<string> EnrolledStudentNKodsFromNeptun { get; set; } = new List<string>();
+
+        public bool HasPresentation => !(Name.Contains("Szakdolgozat") || Name.Contains("Diplomatervezés 2") || Name.Contains("Diplomatervezés B") || Name.Contains("Témalabor"));
+
         public override string ToString()
         {
             return $"{ClassCode}-{CourseCode}";

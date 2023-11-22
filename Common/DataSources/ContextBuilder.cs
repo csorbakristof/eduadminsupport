@@ -129,6 +129,8 @@ namespace Common.DataSources
                     }
                 }
 
+                if (t == null)
+                    continue;
                 s.TopicRegistrations.Add((a, t));
             }
         }
